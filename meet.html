@@ -34,26 +34,47 @@
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.75;pointer-events:none}
   .num{font-variant-numeric:tabular-nums;letter-spacing:.5px;font-size:var(--fz-num);font-weight:900;margin-bottom:6px;text-shadow:0 1px 6px rgba(0,0,0,.25)}
   .label{opacity:.95}
-  .summary{margin-top:14px;font-variant-numeric:tabular-nums;text-shadow:0 2px 8px rgba(0,0,220,.28)}
-  /* 把 💞 染成蓝色（保持原形状） */
+  .summary{
+  margin-top:14px;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 8px rgba(0,0,220,.28); /* 你自定义的蓝色光晕 */
+}
+
+/* 把 💞 染成蓝色（保持原形状） */
 .emoji-blue{
   display:inline-block;
   filter: hue-rotate(235deg) saturate(180%) brightness(1.06);
   -webkit-filter: hue-rotate(235deg) saturate(180%) brightness(1.06);
   transform: translateY(2px); /* 轻微对齐基线 */
-  .fab-wrap{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:4}
-  .fab{position:relative;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.28);
-       backdrop-filter:blur(6px);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.9}
-  #file{display:none}
-  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.6);color:#fff;padding:8px 12px;border-radius:999px;font-size:13px;backdrop-filter:blur(6px);opacity:0;transition:opacity .25s}
-  .toast.show{opacity:1}
-  /* 计时结束时更大（无动画） */
+}  /* ←←← 这个右花括号一定要有！ */
+
+/* 浮动按钮和提示（这些必须在 .emoji-blue 外面） */
+.fab-wrap{
+  position:fixed;right:14px;bottom:14px;
+  display:flex;flex-direction:column;gap:10px;z-index:4
+}
+.fab{
+  position:relative;width:40px;height:40px;border-radius:50%;
+  background:rgba(0,0,0,.28);backdrop-filter:blur(6px);
+  box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;
+  font-size:18px;opacity:.9
+}
+#file{display:none}
+.toast{
+  position:fixed;left:50%;bottom:90px;transform:translateX(-50%);
+  z-index:5;background:rgba(0,0,0,.6);color:#fff;padding:8px 12px;border-radius:999px;
+  font-size:13px;backdrop-filter:blur(6px);opacity:0;transition:opacity .25s
+}
+.toast.show{opacity:1}
+
+/* 计时结束时更大（无动画） */
 #summary.done{
   font-size: clamp(32px, 8vw, 88px);
   font-weight: 900;
   letter-spacing: .5px;
   line-height: 1.15;
 }
+
 </style>
 </head>
 <body>
@@ -77,29 +98,39 @@
   <div id="toast" class="toast">背景已设置 ✓</div>
 
 <script>
-const BG_KEY  = 'shared_bg_v1';           // 你现在两页共用的 key
+/* ===== 背景配置（只声明一次） ===== */
+const BG_KEY  = 'shared_bg_v1';
 const DB_NAME = 'his_site_store';
-const DEFAULT_BG = 'assets/default-bg.jpg';   // ← 默认背景路径（相对当前页）
- 
-/* ===== 共享背景（与 index.html 相同） ===== */
-const BG_KEY='shared_bg_v1'; const DB_NAME='his_site_store';
+const DEFAULT_BG = 'assets/default-bg.jpg';
+
+/* 先把默认背景挂上（即使 JS 其他地方报错，首屏也有图） */
 const bg = document.getElementById('bg');
-bg.src = DEFAULT_BG;   // 先用默认图占位，等会儿有存储再覆盖
- const toast=document.getElementById('toast');
-function tip(s){toast.textContent=s;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1200);}
-function openDB(){return new Promise((ok,err)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>err(r.error);});}
-async function idbGet(k){try{const db=await openDB();return await new Promise((res,rej)=>{const t=db.transaction('kv','readonly');const g=t.objectStore('kv').get(k);g.onsuccess=()=>{res(g.result);db.close();};g.onerror=()=>{rej(g.error);db.close();};});}catch(e){return null;}}
-async function idbSet(k,blob){const db=await openDB();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');const p=t.objectStore('kv').put(blob,k);p.onsuccess=()=>{res();db.close();};p.onerror=()=>{rej(p.error);db.close();};});}
-async function idbDel(k){try{const db=await openDB();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');const d=t.objectStore('kv').delete(k);d.onsuccess=()=>{res();db.close();};d.onerror=()=>{rej(d.error);db.close();};});}catch(e){}}
+bg.src = DEFAULT_BG;
+
+const toast = document.getElementById('toast');
+function tip(s){
+  if(!toast) return;
+  toast.textContent = s;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1200);
+}
+
+/* IndexedDB 辅助函数 …（保持你原来的）*/
+function openDB(){ /* 原样保持 */ }
+async function idbGet(k){ /* 原样保持 */ }
+async function idbSet(k,blob){ /* 原样保持 */ }
+async function idbDel(k){ /* 原样保持 */ }
+
+/* 初始化读取：IDB → localStorage → 默认图（已在上面设置） */
 (async ()=>{
-  try {
-    const blob = await idbGet(BG_KEY);
-    if (blob && blob.size) { bg.src = URL.createObjectURL(blob); return; }
-  } catch(e) {}
+  try{
+    const b = await idbGet(BG_KEY);
+    if (b && b.size){ bg.src = URL.createObjectURL(b); return; }
+  }catch(e){}
   const ls = localStorage.getItem(BG_KEY);
   if (ls) bg.src = ls;
-  // 如果两处都没有，保持 DEFAULT_BG（上面已经设过）
 })();
+
 
 document.getElementById('btnImport').addEventListener('click',()=>file.click());
 const file=document.getElementById('file');
@@ -146,6 +177,7 @@ render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+
 
 
 

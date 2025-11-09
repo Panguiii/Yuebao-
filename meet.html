@@ -199,7 +199,7 @@ function render(){
     summaryEl.innerHTML='就是现在！到你身边啦 <span class="emoji-blue" role="img" aria-label="revolving hearts">💞</span>';
     summaryEl.classList.add('done');
   }else{
-    summaryEl.textContent=`还有 ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
+    summaryEl.textContent=`倒计时： ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
     summaryEl.classList.remove('done');
   }
 
@@ -220,6 +220,7 @@ render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+
 
 
 

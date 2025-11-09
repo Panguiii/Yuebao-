@@ -213,13 +213,14 @@ function render(){
 
   // 当前时间（页面底部）
   document.getElementById('nowline').textContent=
-    `当前成都时间：${z.Y}-${pad(z.M)}-${pad(z.D)} ${pad(z.h)}:${pad(z.min)}:${pad(z.s)}`;
+    `当前成都时间：${z.Y}.${pad(z.M)}.${pad(z.D)} ${pad(z.h)}:${pad(z.min)}:${pad(z.s)}`;
 }
 
 render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+
 
 
 

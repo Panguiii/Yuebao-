@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>当你老了~</title>
+<style>
+  :root{
+    --text:#fff; --muted:rgba(255,255,255,.88);
+    --glass:rgba(0,0,0,.14);            /* 卡片磨砂 */
+    --panel:rgba(0,0,0,.34);
+    --shadow:0 12px 28px rgba(0,0,0,.45);
+    --radius:16px;
+    --dim:.1;                          /* 背景遮罩强度（可调 0.14~0.25） */
+    --bg-composite:none;                /* JS 写入：遮罩 + 背景图 */
+  }
+
+  html,body{margin:0;padding:0;height:100%;color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+  /* 背景：照片 + 遮罩（用 CSS 变量承载） */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-2;
+    background-image: var(--bg-composite);
+    background-size:cover; background-position:center 35%;
+    filter:saturate(112%) contrast(106%) brightness(0.92);
+  }
+  /* 轻柔彩色光晕（装饰） */
+  body::after{
+    content:""; position:fixed; inset:-25vh -25vw; z-index:-1; filter:blur(70px) opacity(.75);
+    background:
+      radial-gradient(40% 40% at 20% 20%, rgba(255,154,162,.20), transparent 60%),
+      radial-gradient(45% 45% at 85% 25%, rgba(156,217,255,.20), transparent 60%),
+      radial-gradient(50% 50% at 18% 80%, rgba(168,230,207,.18), transparent 60%),
+      radial-gradient(55% 55% at 75% 85%, rgba(199,206,255,.18), transparent 60%);
+  }
+
+  .wrap{max-width:960px;margin:0 auto;padding:28px 22px 64px}
+  h1{margin:0 0 10px;font-size:24px;letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .sub{color:var(--muted);font-size:13px;margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
+  .sub:empty{min-height:1em}
+
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}
+  .pill{
+    position:relative; padding:8px 12px; border-radius:999px;
+    background:var(--panel); backdrop-filter:blur(2px); box-shadow:var(--shadow);
+    font-weight:700; user-select:none; cursor:pointer; overflow:hidden;
+  }
+  /* 彩虹描边（通用） */
+  .pill::before, .card::before, .fab::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; padding:1.2px;
+    background:conic-gradient(from 180deg,#ff9aa2,#ffdac1,#e2f0cb,#a8e6cf,#9cd9ff,#c7ceff,#ff9aa2);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.75;
+  }
+  .pill.sel{background:linear-gradient(135deg, rgba(155,209,255,.95), rgba(235,207,255,.95)); color:#111}
+
+  /* 自适应卡片网格（120px 起步） */
+  .panel{display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:12px}
+  .card{position:relative; background:var(--glass); backdrop-filter:blur(6px);
+    border-radius:var(--radius); padding:16px; text-align:center; box-shadow:var(--shadow); overflow:hidden}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:.5px;font-size:40px;font-weight:900;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.28)}
+  .label{font-size:12px;opacity:.95}
+  .summary{margin-top:14px;font-variant-numeric:tabular-nums;text-shadow:0 2px 8px rgba(0,0,0,.28)}
+
+  /* 右下角：导入/清除背景（小而不显眼） */
+  .fab-wrap{position:fixed; right:14px; bottom:14px; display:flex; flex-direction:column; gap:10px; z-index:5}
+  .fab{position:relative; width:40px; height:40px; border-radius:50%;
+    background:rgba(0,0,0,.28); backdrop-filter:blur(6px); box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; font-size:18px; opacity:.85; overflow:hidden}
+  .fab span{filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+  #file{display:none}
+/* === 清晰版覆盖（放在 <style> 最后）=== */
+:root{
+  --dim:.08;                 /* 背景遮罩更轻（原来 .22） */
+  --glass:rgba(0,0,0,.10);   /* 卡片底更透明（原来 .30） */
+}
+/* 卡片磨砂更弱、更清晰（原来 blur(6px)） */
+.card{ backdrop-filter: blur(1.5px); }
+
+/* 数字略增可读性（可选） */
+.num{ text-shadow: 0 1px 6px rgba(0,0,0,.25); }
+/* 工具条按钮轻一点（可选） */
+.pill{ backdrop-filter: blur(3px); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>当你老了</h1>
+    <div id="nowline" class="sub"></div>
+
+    <div class="toolbar">
+      <div class="pill sel" data-mode="year">按年</div>
+      <div class="pill" data-mode="month">按月</div>
+      <div class="pill" data-mode="day">按天</div>
+    </div>
+
+    <div class="panel" id="panel"></div>
+
+    <div class="summary" id="summary"></div>
+    <div class="sub" id="birthline"></div>
+  </div>
+
+  <div class="fab-wrap">
+    <div class="fab" id="btnImport" title="导入背景"><span>🖼️</span></div>
+    <div class="fab" id="btnClear"  title="清除背景"><span>⌫</span></div>
+  </div>
+  <input id="file" type="file" accept="image/*">
+
+<script>
+/* ===== 配置 ===== */
+const TZ='Asia/Shanghai';
+const BIRTH='1997-07-01T05:37:00';      // 成都·民用晨光
+const LS_BG='age_bg_dataurl';           // 背景存储 key（localStorage）
+
+/* ===== 背景：应用/导入/清除 ===== */
+function applyBG(dataUrl){
+  const dim=getComputedStyle(document.documentElement).getPropertyValue('--dim').trim() || '.22';
+  const overlay=`linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim}))`;
+  const composite=dataUrl ? `${overlay}, url(${dataUrl})` : `${overlay}, none`;
+  document.documentElement.style.setProperty('--bg-composite', composite);
+}
+// 初始化（读取已保存的背景）
+try{ applyBG(localStorage.getItem(LS_BG)); }catch(e){}
+
+// 导入图片（压缩到最长边 1600，体积更稳）
+const file=document.getElementById('file');
+document.getElementById('btnImport').addEventListener('click',()=>file.click());
+file.addEventListener('change', ()=>{
+  const f=file.files && file.files[0]; if(!f) return;
+  const img=new Image(); const reader=new FileReader();
+  reader.onload=()=>{ img.onload=()=>{
+      const max=1600; let w=img.naturalWidth, h=img.naturalHeight;
+      const r=Math.min(1, max/w, max/h); w=Math.round(w*r); h=Math.round(h*r);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=c.toDataURL('image/jpeg',0.85);
+      applyBG(dataUrl);
+      try{ localStorage.setItem(LS_BG,dataUrl); }catch(e){}
+      file.value="";
+    }; img.src=reader.result;
+  }; reader.readAsDataURL(f);
+});
+document.getElementById('btnClear').addEventListener('click', ()=>{
+  applyBG(null); try{ localStorage.removeItem(LS_BG); }catch(e){}
+});
+
+/* ===== 年龄计算（按年 / 按月 / 按天） ===== */
+function pad(n){return String(n).padStart(2,'0')}
+function isLeap(y){return (y%4===0 && (y%100!==0 || y%400===0))}
+function daysInMonth(y,m){return [31,isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31][m-1]}
+function parseDT(s){const r=String(s).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);return {Y:+r[1],M:+r[2],D:+r[3],h:+r[4],min:+r[5],s:+(r[6]||0)}}
+const B=parseDT(BIRTH);
+
+function nowParts(zone){
+  const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const ps=fmt.formatToParts(new Date()); const m={}; for(const p of ps) if(p.type!=='literal') m[p.type]=+p.value;
+  return {Y:m.year,M:m.month,D:m.day,h:m.hour,min:m.minute,s:m.second};
+}
+function diffYMDHMS(n,b){
+  let Y=n.Y-b.Y,M=n.M-b.M,D=n.D-b.D,h=n.h-b.h,m=n.min-b.min,s=n.s-b.s;
+  if(s<0){s+=60;m--;} if(m<0){m+=60;h--;} if(h<0){h+=24;D--;}
+  if(D<0){let pm=n.M-1,py=n.Y;if(pm===0){pm=12;py--;} D+=daysInMonth(py,pm); M--;}
+  if(M<0){M+=12;Y--;} return {Y,M,D,h,m,s};
+}
+function sumMonthDaysFrom(y,m,c){let t=0;for(let i=0;i<c;i++){t+=daysInMonth(y,m);m++;if(m===13){m=1;y++;}}return t}
+
+let mode='year';
+function addCard(p,num,label){const c=document.createElement('div');c.className='card';const n=document.createElement('div');n.className='num';n.textContent=num;const l=document.createElement('div');l.className='label';l.textContent=label;c.appendChild(n);c.appendChild(l);p.appendChild(c);}
+function render(){
+  const n=nowParts(TZ); const d=diffYMDHMS(n,B);
+  const months=d.Y*12+d.M, days=sumMonthDaysFrom(B.Y,B.M,months)+d.D;
+  document.getElementById('nowline').textContent=`当前（${TZ}）：${n.Y}-${pad(n.M)}-${pad(n.D)} ${pad(n.h)}:${pad(n.min)}:${pad(n.s)}`;
+  document.getElementById('birthline').textContent=`爱在黎明破晓前：${B.Y}-${pad(B.M)}-${pad(B.D)} ${pad(B.h)}:${pad(B.min)}:${pad(B.s)} · 时区：${TZ}`;
+  const panel=document.getElementById('panel'); panel.innerHTML='';
+  if(mode==='year'){
+    addCard(panel,d.Y,'年');addCard(panel,d.M,'月');addCard(panel,d.D,'天');addCard(panel,d.h,'小时');addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
+    document.getElementById('summary').textContent=`已满 ${d.Y} 年 ${d.M} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+  }else if(mode==='month'){
+    addCard(panel,months,'月');addCard(panel,d.D,'天');addCard(panel,d.h,'小时');addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
+    document.getElementById('summary').textContent=`已满 ${months} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+  }else{
+    addCard(panel,days,'天');addCard(panel,d.h,'小时');addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
+    document.getElementById('summary').textContent=`已满 ${days} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+  }
+}
+document.querySelectorAll('.pill[data-mode]').forEach(el=>{
+  el.addEventListener('click',()=>{document.querySelectorAll('.pill[data-mode]').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');mode=el.getAttribute('data-mode');render();});
+});
+render(); setInterval(render,1000);
+</script>
+</body>
+</html>

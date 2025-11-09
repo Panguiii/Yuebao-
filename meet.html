@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>还有多久我才能在你身边</title>
+<style>
+  :root{
+    --text:#fff; --muted:rgba(255,255,255,.88);
+    --glass:rgba(0,0,0,.12); --panel:rgba(0,0,0,.28);
+    --shadow:0 12px 28px rgba(0,0,0,.45); --radius:16px;
+    --dim:.10;                   /* 背景遮罩强度 */
+    --bg-composite:none;         /* JS 写入：遮罩 + 背景图 */
+    --fz-base: clamp(14px,1.6vw,18px);
+    --fz-h1: clamp(22px,2.4vw,34px);
+    --fz-num: clamp(36px,6vw,72px);
+  }
+  html,body{
+    margin:0;padding:0;height:100%;background:#0b0f16;color:var(--text);
+    font:var(--fz-base)/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  @supports (height:100dvh){ body{ min-height:100dvh; } }
+
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-2;
+    background-image: var(--bg-composite);
+    background-size:cover;background-position:center 35%;
+    filter:saturate(112%) contrast(106%) brightness(.92);
+  }
+  body::after{
+    content:"";position:fixed;inset:-25vh -25vw;z-index:-1;filter:blur(70px) opacity(.75);
+    background:
+      radial-gradient(40% 40% at 20% 20%, rgba(255,154,162,.20), transparent 60%),
+      radial-gradient(45% 45% at 85% 25%, rgba(156,217,255,.20), transparent 60%),
+      radial-gradient(50% 50% at 18% 80%, rgba(168,230,207,.18), transparent 60%),
+      radial-gradient(55% 55% at 75% 85%, rgba(199,206,255,.18), transparent 60%);
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 72px}
+  h1{margin:0 0 10px;font-size:var(--fz-h1);letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .sub{color:var(--muted);margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
+
+  .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .card{position:relative;background:var(--glass);backdrop-filter:blur(2px);
+        border-radius:var(--radius);padding:18px;text-align:center;box-shadow:var(--shadow)}
+  .card::before{
+    content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;
+    background:conic-gradient(from 180deg,#ff9aa2,#ffdac1,#e2f0cb,#a8e6cf,#9cd9ff,#c7ceff,#ff9aa2);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;opacity:.75;pointer-events:none;
+  }
+  .num{font-variant-numeric:tabular-nums;letter-spacing:.5px;font-size:var(--fz-num);font-weight:900;margin-bottom:6px;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+  .label{opacity:.95}
+  .summary{margin-top:14px;font-variant-numeric:tabular-nums;text-shadow:0 2px 8px rgba(0,0,0,.28)}
+
+  .fab-wrap{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:5}
+  .fab{position:relative;width:40px;height:40px;border-radius:50%;
+       background:rgba(0,0,0,.28);backdrop-filter:blur(6px);box-shadow:var(--shadow);
+       display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.85}
+  .fab span{filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+  #file{display:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>还有多久我才能在你身边</h1>
+    <div id="nowline" class="sub"></div>
+
+    <div id="panel" class="panel"></div>
+    <div id="summary" class="summary"></div>
+    <div id="targetline" class="sub"></div>
+  </div>
+
+  <div class="fab-wrap">
+    <div class="fab" id="btnImport" title="导入背景"><span>🖼️</span></div>
+    <div class="fab" id="btnClear"  title="清除背景"><span>⌫</span></div>
+  </div>
+  <input id="file" type="file" accept="image/*">
+
+<script>
+/* ===== 配置 ===== */
+const TZ='Asia/Shanghai';
+const TARGET_ISO='2025-12-21T09:00:00+08:00';
+const LS_BG='meet_bg_dataurl';        // 可与年龄页分开保存；想复用可改成 age_bg_dataurl
+
+/* ===== 背景（同样管线） ===== */
+function applyBG(dataUrl){
+  const dim=getComputedStyle(document.documentElement).getPropertyValue('--dim').trim()||'.10';
+  const overlay=`linear-gradient(rgba(0,0,0,${dim}),rgba(0,0,0,${dim}))`;
+  const composite=dataUrl ? `${overlay}, url(${dataUrl})` : `${overlay}, none`;
+  document.documentElement.style.setProperty('--bg-composite', composite);
+}
+try{ applyBG(localStorage.getItem(LS_BG)); }catch(e){}
+
+const file=document.getElementById('file');
+document.getElementById('btnImport').addEventListener('click',()=>file.click());
+file.addEventListener('change',()=>{
+  const f=file.files&&file.files[0]; if(!f) return;
+  const img=new Image(); const reader=new FileReader();
+  reader.onload=()=>{ img.onload=()=>{
+      const max=1600; let w=img.naturalWidth,h=img.naturalHeight;
+      const r=Math.min(1,max/w,max/h); w=Math.round(w*r); h=Math.round(h*r);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=c.toDataURL('image/jpeg',0.85);
+      applyBG(dataUrl); try{localStorage.setItem(LS_BG,dataUrl);}catch(e){}
+      file.value="";
+  }; img.src=reader.result; };
+  reader.readAsDataURL(f);
+});
+document.getElementById('btnClear').addEventListener('click',()=>{ applyBG(null); try{localStorage.removeItem(LS_BG);}catch(e){}; });
+
+/* ===== 倒计时：最大单位为“天” ===== */
+function pad(n){return String(n).padStart(2,'0')}
+function nowInZoneParts(zone){
+  const f=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const ps=f.formatToParts(new Date()); const m={}; for(const p of ps) if(p.type!=='literal') m[p.type]=+p.value;
+  return {Y:m.year,M:m.month,D:m.day,h:m.hour,min:m.minute,s:m.second};
+}
+const TARGET=new Date(TARGET_ISO).getTime();
+function splitLeft(ms){
+  if(ms<=0) return {d:0,h:0,m:0,s:0,done:true};
+  let t=Math.floor(ms/1000);
+  const d=Math.floor(t/86400); t%=86400;
+  const h=Math.floor(t/3600);  t%=3600;
+  const m=Math.floor(t/60);    t%=60;
+  return {d,h:m<0?0:h,m:m<0?0:m,s:t,done:false};
+}
+
+function render(){
+  const left=splitLeft(TARGET-Date.now());
+  const z=nowInZoneParts(TZ);
+  document.getElementById('nowline').textContent=`当前（${TZ}）：${z.Y}-${pad(z.M)}-${pad(z.D)} ${pad(z.h)}:${pad(z.min)}:${pad(z.s)}`;
+  document.getElementById('targetline').textContent=`相见时间（${TZ}）：2025-12-21 09:00:00`;
+
+  const panel=document.getElementById('panel'); panel.innerHTML='';
+  const add=(num,label)=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<div class="num">${num}</div><div class="label">${label}</div>`;panel.appendChild(c);};
+  add(left.d,'天'); add(left.h,'小时'); add(left.m,'分钟'); add(left.s,'秒');
+
+  document.getElementById('summary').textContent = left.done ? '就是现在！到你身边啦 💞'
+    : `还有 ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
+}
+render(); setInterval(render,1000);
+</script>
+</body>
+</html>

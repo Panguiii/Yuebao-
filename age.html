@@ -117,26 +117,26 @@ function render(){
   const months=d.Y*12+d.M; const days=sumMonthDaysFrom(B.Y,B.M,months)+d.D;
 
   document.getElementById('nowline').textContent=
-    `当前（${TZ}）：${n.Y}-${pad(n.M)}-${pad(n.D)} ${pad(n.h)}:${pad(n.min)}:${pad(n.s)}`;
+    `现在是：${n.Y}.${pad(n.M)}.${pad(n.D)} ${pad(n.h)}:${pad(n.min)}:${pad(n.s)}`;
 
   document.getElementById('birthline').textContent=
-    `爱在黎明破晓前： ${B.Y}-${pad(B.M)}-${pad(B.D)} ${pad(B.h)}:${pad(B.min)}:${pad(B.s)} · 时区：${TZ}`;
+    `爱在黎明破晓前： ${B.Y}-${pad(B.M)}-${pad(B.D)} ${pad(B.h)}:${pad(B.min)}:${pad(B.s)} `;
 
   const panel=document.getElementById('panel'); panel.innerHTML='';
   if(mode==='year'){
     addCard(panel,d.Y,'年');addCard(panel,d.M,'月');addCard(panel,d.D,'天');
     addCard(panel,d.h,'小时');addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
     document.getElementById('summary').textContent=
-      `已满 ${d.Y} 年 ${d.M} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+      `他已经 ${d.Y} 年 ${d.M} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒大咯`;
   }else if(mode==='month'){
     addCard(panel,months,'月');addCard(panel,d.D,'天');addCard(panel,d.h,'小时');
     addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
     document.getElementById('summary').textContent=
-      `已满 ${months} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+      `他已经 ${months} 个月 ${d.D} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒大咯`;
   }else{
     addCard(panel,days,'天');addCard(panel,d.h,'小时');addCard(panel,d.m,'分钟');addCard(panel,d.s,'秒');
     document.getElementById('summary').textContent=
-      `已满 ${days} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒`;
+      `他已经 ${days} 天 ${d.h} 小时 ${d.m} 分 ${d.s} 秒大咯`;
   }
 }
 
@@ -151,3 +151,4 @@ render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+

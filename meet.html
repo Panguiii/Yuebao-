@@ -105,7 +105,7 @@ file.addEventListener('change',async()=>{
 document.getElementById('btnClear').addEventListener('click',async()=>{bg.removeAttribute('src');await idbDel(BG_KEY);try{localStorage.removeItem(BG_KEY);}catch(e){};tip('已清除背景');});
 
 /* ===== 倒计时（最大单位：天） ===== */
-const TZ='Asia/Shanghai', TARGET=new Date('2025-11-10T02:11:00+08:00').getTime();
+const TZ='Asia/Chengdu', TARGET=new Date('2025-11-10T02:11:00+08:00').getTime();
 function pad(n){return String(n).padStart(2,'0')}
 function nowInZoneParts(zone){const f=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const ps=f.formatToParts(new Date());const m={};for(const p of ps)if(p.type!=='literal')m[p.type]=+p.value;return{Y:m.year,M:m.month,D:m.day,h:m.hour,min:m.minute,s:m.second};}
 function split(ms){if(ms<=0)return{d:0,h:0,m:0,s:0,done:true};let t=Math.floor(ms/1000);const d=Math.floor(t/86400);t%=86400;const h=Math.floor(t/3600);t%=3600;const m=Math.floor(t/60);t%=60;return{d,h,m,s:t,done:false};}
@@ -127,6 +127,7 @@ render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+
 
 
 

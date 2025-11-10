@@ -151,6 +151,61 @@
     position:relative; top: var(--final-up);
     filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
   }
+  /* 进度区域用纵向 Flex，默认顺序：条 → 文案 → final */
+.season-wrap{
+  position: relative;
+  z-index: 5;
+  margin-top: clamp(12px,24vh, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;                     /* 条与文案/final 的间距 */
+}
+
+/* 基本顺序（未完成） */
+.season-bar   { order: 1; }
+.season-ends  { order: 2; }
+.season-final { order: 3; }
+
+/* 完成后：final 在最上，进度条居中，文案在最下 */
+.season-wrap.done .season-final { order: 1; display:block; }
+.season-wrap.done .season-bar   { order: 2; }
+.season-wrap.done .season-ends  { order: 3; }
+
+/* 完成后隐藏两只 GIF，但保留条本身与百分比 */
+.season-wrap.done .season-dog,
+.season-wrap.done .season-end { display: none !important; }
+
+/* final.gif 的位置与大小（想更靠上就调这个负值/正值） */
+:root{ --final-offset: -10px; }   /* 往上：负值更大；往下：设为正值 */
+.season-final{
+  display:none;
+  margin: var(--final-offset) auto 0;   /* 顶部外边距可为负，拉近进度条 */
+  width: 160px; height: auto;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,.45));
+}
+
+/* —— 保证两只 GIF 都“骑”在进度条上 —— */
+:root{
+  --pet-top: -38px;   /* 往上：更负；往下：更接近 0 */
+  --end-right: -2px;  /* 终点水平贴条右端：0=齐平，负值稍微溢出一点 */
+}
+.season-bar{ position:relative; height:18px; border-radius:999px; overflow:visible; background:#ffffff1a; box-shadow:var(--shadow); }
+.season-fill{ position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2); clip-path: inset(0 0 0 0 round 999px); }
+.season-percent{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; user-select:none; }
+
+.season-dog{
+  position:absolute; top:var(--pet-top); left:0; transform:translateX(-50%);
+  width:44px; height:auto; z-index:2; pointer-events:none;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));
+  animation:season-bounce .9s ease-in-out infinite;
+}
+.season-end{
+  position:absolute; top:var(--pet-top); right:var(--end-right);
+  width:62px; height:auto; z-index:2; pointer-events:none;  /* 1.4 × 放大 */
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));
+}
+@keyframes season-bounce{ 0%,100%{ transform:translate(-50%,0) } 50%{ transform:translate(-50%,-6px) } }
+
 </style>
 </head>
 <body>
@@ -298,29 +353,37 @@ function render(){
   const targetEl  = document.getElementById('targetline');
 
   if (left.done) {
-    summaryEl.innerHTML = '就是现在！到他身边啦 <span class="emoji-blue" role="img" aria-label="revolving hearts">💞</span>';
-    summaryEl.classList.add('done');
+  summaryEl.innerHTML = '就是现在！到他身边啦 <span class="emoji-blue" role="img" aria-label="revolving hearts">💞</span>';
+  summaryEl.classList.add('done');
 
-    if (targetEl) { targetEl.textContent = ''; targetEl.style.display = 'none'; }
+  if (targetEl) { targetEl.textContent = ''; targetEl.style.display = 'none'; }
 
-    // 完成：隐藏进度条与标注，显示 final.gif
-    if (_sBar)  _sBar.style.display = 'none';
-    if (_sEnds) _sEnds.style.display = 'none';
-    if (_sFinal) _sFinal.style.display = 'block';
+  // ✅ 完成态：给季节进度容器加上 .done
+  if (_sWrap) _sWrap.classList.add('done');
 
-  } else {
-    summaryEl.textContent = `倒计时： ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
-    summaryEl.classList.remove('done');
+  // 进度条继续显示 & 100%
+  updateSeason();
+  if (_sBar)  _sBar.style.display = 'block';
+  if (_sEnds) _sEnds.style.display = 'flex';
 
-    if (targetEl) { targetEl.style.display = 'block'; targetEl.textContent = '我们在成都见面吧！'; }
+  // 显示 final.gif（CSS 会把它放到上方）
+  if (_sFinal) _sFinal.style.display = 'block';
 
-    // 运行进度条
-    updateSeason();
+} else {
+  summaryEl.textContent = `倒计时： ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
+  summaryEl.classList.remove('done');
 
-    if (_sBar)  _sBar.style.display = 'block';
-    if (_sEnds) _sEnds.style.display = 'flex';
-    if (_sFinal) _sFinal.style.display = 'none';
-  }
+  if (targetEl) { targetEl.style.display = 'block'; targetEl.textContent = '我们在成都见面吧！'; }
+
+  // ✅ 恢复常态：去掉 .done
+  if (_sWrap) _sWrap.classList.remove('done');
+
+  updateSeason();
+  if (_sBar)  _sBar.style.display = 'block';
+  if (_sEnds) _sEnds.style.display = 'flex';
+  if (_sFinal) _sFinal.style.display = 'none';
+}
+
 
   // 倒计时卡片
   const p = document.getElementById('panel'); 
@@ -417,6 +480,7 @@ window.addEventListener('DOMContentLoaded', applyFits);
 </script>
 </body>
 </html>
+
 
 
 

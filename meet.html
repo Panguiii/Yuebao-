@@ -12,7 +12,15 @@
     --text:#fff; --muted:rgba(255,255,255,.88);
     --glass:rgba(0,0,0,.12); --panel:rgba(0,0,0,.28);
     --shadow:0 12px 28px rgba(0,0,0,.45); --radius:16px;
-    --dim:.10; --fz-base:clamp(14px,1.6vw,18px); --fz-h1:clamp(28px,8vw,70px); --fz-num:clamp(36px,6vw,72px);
+    --dim:.10;
+    --fz-base:clamp(14px,1.6vw,18px);
+    --fz-h1:clamp(28px,8vw,70px);
+    --fz-num:clamp(36px,6vw,72px);
+
+    /* 这里可以调：进度条整体离“我们在成都见面吧”有多远；越小越靠上 */
+    --season-offset: clamp(12px, 6vh, 96px);
+    /* 这里可以调：final.gif 在完成时向上移动多少（负值=向上） */
+    --final-up: -24px;
   }
   html,body{
     margin:0;padding:0;background:#0b0f16;color:var(--text);
@@ -99,52 +107,35 @@
   .season-wrap{
     position: relative;
     z-index: 5;
-    margin-top: clamp(12px,24vh, 32px); /* 下移，避免挡字 */
+    margin-top: var(--season-offset); /* 统一用变量控制整体上移 */
   }
-  .season-bar{
-    position:relative;height:18px;border-radius:999px;
-    overflow:visible; /* 允许狗/终点溢出显示 */
-    background:#ffffff1a; box-shadow:var(--shadow);
-  }
-  .season-fill{
-    position:absolute;inset:0 auto 0 0;width:0;
-    background: linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2);
-    clip-path: inset(0 0 0 0 round 999px); /* 保留圆角裁剪 */
-  }
-  /* 居中百分比（覆盖在条中间） */
-  .season-percent{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:800; font-size:13px; color:#fff;
-    text-shadow:0 2px 8px rgba(0,0,0,.45);
-    pointer-events:none; user-select:none;
-  }
+  /* 图层：条在下，文字居中，两个 GIF 在最上面 */
+  .season-bar{ position:relative; height:18px; border-radius:999px; overflow:visible; background:#ffffff1a; box-shadow:var(--shadow); z-index:1; }
+  .season-fill{ position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2); clip-path: inset(0 0 0 0 round 999px); z-index:0; }
+  .season-percent{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; user-select:none; z-index:1; }
 
   .season-dog{
-    position:absolute;top:-26px;left:0;transform:translateX(-50%);
-    width:44px;height:auto;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));
-    animation:season-bounce .9s ease-in-out infinite;
-    z-index: 1; pointer-events:none;
+    position:absolute; top:-26px; left:0; transform:translateX(-50%);
+    width:44px; height:auto; filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));
+    animation:season-bounce .9s ease-in-out infinite; z-index:2; pointer-events:none;
   }
-  @keyframes season-bounce{
-    0%,100%{ transform:translate(-50%,0) } 50%{ transform:translate(-50%,-6px) }
-  }
+  @keyframes season-bounce{ 0%,100%{ transform:translate(-50%,0) } 50%{ transform:translate(-50%,-6px) } }
 
-  /* 终点放大 1.4× */
+  /* 右侧终点：放大 1.4×，放到条上方 */
   .season-end{
-    position:absolute;top:-30px;right:-6px;width:62px;height:auto; /* 44px × 1.4 ≈ 61.6 */
-    filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));
-    pointer-events:none;
+    position:absolute; top:-26px; right:-6px; width:62px; height:auto;
+    filter:drop-shadow(0 8px 16px rgba(0,0,0,.35)); z-index:2; pointer-events:none;
   }
 
   .season-ends{
-    display:flex;justify-content:space-between;align-items:center;
-    margin:8px 2px 0;color:var(--muted);font-size:.95em
+    display:flex; justify-content:space-between; align-items:center;
+    margin:8px 2px 0; color:var(--muted); font-size:.95em
   }
 
-  /* 完成时的最终 GIF（居中放大） */
+  /* 完成时的最终 GIF（居中并上移一点） */
   .season-final{
     display:none; margin:30px auto 0; width:160px; height:auto;
+    position:relative; top: var(--final-up);
     filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
   }
 </style>
@@ -162,9 +153,7 @@
     </h1>
 
     <div id="summary" class="summary fit1"></div>
-
     <div id="panel" class="panel"></div>
-
     <div id="targetline" class="sub fit1"></div>
 
     <!-- 立冬→冬至 · 季节进度 -->
@@ -248,7 +237,7 @@ function split(ms){
 /* —— 立冬→冬至 · 进度条（北京时间）—— */
 const LIDONG_START = new Date('2025-11-07T17:05:00+08:00').getTime();
 const DONGZHI_END  = new Date('2025-12-21T23:03:00+08:00').getTime();
-const _sWrap = document.getElementById('seasonWrap');
+
 const _sBar  = document.getElementById('seasonBar');
 const _sFill = document.getElementById('seasonFill');
 const _sDog  = document.getElementById('seasonDog');
@@ -266,32 +255,24 @@ function updateSeason(){
   const span = Math.max(1, DONGZHI_END - LIDONG_START);
   const rawP = clamp01((Date.now() - LIDONG_START) / span);
 
-  // 百分比显示（取 1 位小数）
+  // 百分比显示（1 位小数）
   const pct = Math.min(100, Math.max(0, rawP*100));
   _sPct.textContent = pct.toFixed(1) + '%';
 
   // 计算像素位置并防碰撞
-  const barW = _sBar.clientWidth;
+  const barW = _sBar.clientWidth || 1;
   const dogW = _sDog.offsetWidth || 44;
   const endW = _sEnd.offsetWidth || 62;
   const END_RIGHT_OFFSET = 6;     // .season-end 的 right:-6px
-  const SAFE_GAP = 8;             // 安全间距（可微调）
+  const SAFE_GAP = 8;             // 安全间距
 
-  // 终点左边界（像素）
-  const endLeft = barW - endW - END_RIGHT_OFFSET;
-
-  // 狗中心允许的最右位置（终点左边界 - 安全距 - 狗半宽）
+  const endLeft = barW - endW - END_RIGHT_OFFSET;                // 终点左边界
   const maxDogCenter = Math.max(dogW/2, endLeft - SAFE_GAP - dogW/2);
-
-  // 狗中心目标位置（按进度）
   let dogCenter = rawP * barW;
   dogCenter = Math.min(Math.max(dogW/2, dogCenter), maxDogCenter);
 
-  // 设置填充宽度（百分比仍按真实 rawP 走到 100%，视觉更符合“时间进度”）
-  _sFill.style.width = (pct) + '%';
-
-  // 设置狗的位置（left 是中心点，配合 translateX(-50%)）
-  _sDog.style.left = (dogCenter / barW * 100) + '%';
+  _sFill.style.width = pct + '%';                               // 填充照真实进度走到 100%
+  _sDog.style.left = (dogCenter / barW * 100) + '%';            // 小狗位置（中心点）
 }
 window.addEventListener('resize', updateSeason);
 
@@ -309,7 +290,7 @@ function render(){
 
     if (targetEl) { targetEl.textContent = ''; targetEl.style.display = 'none'; }
 
-    /* 完成：隐藏进度条与两只 GIF，显示 final.gif */
+    // 完成：隐藏进度条与标注，显示 final.gif
     if (_sBar)  _sBar.style.display = 'none';
     if (_sEnds) _sEnds.style.display = 'none';
     if (_sFinal) _sFinal.style.display = 'block';
@@ -423,33 +404,3 @@ window.addEventListener('DOMContentLoaded', applyFits);
 </script>
 </body>
 </html>
-/* 让进度条整体再靠上一些：数值越小越靠上 */
-:root{
-  --season-offset: clamp(24px, 6vh, 120px);  /* 之前你写的是 64px/11vh/200px */
-}
-.season-wrap{
-  margin-top: var(--season-offset);
-}
-
-/* 图层分级：条在下，文字居中，两个 GIF 在最上面 */
-.season-bar{ position: relative; z-index: 1; }
-.season-fill{ z-index: 0; }
-.season-percent{ z-index: 1; }
-.season-dog, .season-end{ z-index: 2; }   /* 关键：把右侧 GIF 提到条上方 */
-
-/* 右侧终点 GIF 放到条上方并保持 1.4× 放大 */
-.season-end{
-  top: -26px;         /* 和小狗同一高度骑在条上 */
-  right: -6px;
-  width: 62px;        /* 44px × 1.4 */
-  height: auto;
-  pointer-events: none;
-}
-
-
-
-
-
-
-
-

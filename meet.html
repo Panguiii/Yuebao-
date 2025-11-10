@@ -17,11 +17,17 @@
     --fz-h1:clamp(28px,8vw,70px);
     --fz-num:clamp(36px,6vw,72px);
 
-    /* 这里可以调：进度条整体离“我们在成都见面吧”有多远；越小越靠上 */
+    /* 进度条整体与上方文案的间距（越小越靠上） */
     --season-offset: clamp(12px, 6vh, 96px);
-    /* 这里可以调：final.gif 在完成时向上移动多少（负值=向上） */
+    /* 完成后 final.gif 向上位移（负值=更靠近进度条） */
     --final-up: -50px;
+
+    /* 左右两只 GIF 的垂直高度（相对进度条）——分别可调 */
+    --dog-top: -60px;   /* 小狗更高一点 */
+    --end-top: -52px;   /* 右侧终点略低一点以对齐视觉 */
+    --end-right: -4px;  /* 终点水平向右微溢出：0=齐平，负值=更靠外 */
   }
+
   html,body{
     margin:0;padding:0;background:#0b0f16;color:var(--text);
     font:var(--fz-base)/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif
@@ -38,10 +44,8 @@
       radial-gradient(55% 55% at 75% 85%, rgba(199,206,255,.18), transparent 60%);}
 
   /* 布局 */
-  .wrap{
-    position:relative;z-index:3;max-width:1120px;margin:0 auto;
-    padding:28px 22px 18px; min-height:100svh; display:flex;flex-direction:column;
-  }
+  .wrap{ position:relative;z-index:3;max-width:1120px;margin:0 auto;
+    padding:28px 22px 18px; min-height:100svh; display:flex;flex-direction:column; }
   h1{margin:0 0 10px;font-size:var(--fz-h1);letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.35)}
 
   /* 顺序：标题(0) → 回答(1) → 面板(2) → 见面文案(3) → 季节进度(4) → 底部当前时间(99) */
@@ -53,7 +57,6 @@
 
   .sub{color:var(--muted);margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
   .panel{margin-top:clamp(24px,4vh,120px)}
-
   .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
   .card{position:relative;background:var(--glass);backdrop-filter:blur(2px);border-radius:var(--radius);padding:18px;text-align:center;box-shadow:var(--shadow)}
   .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;
@@ -67,10 +70,8 @@
     text-shadow:0 2px 8px rgba(0,0,220,.28);
     font-size:clamp(22px,5.8vw,64px);font-weight:900;line-height:1.18;letter-spacing:.3px;
   }
-  .emoji-blue{
-    display:inline-block;filter:hue-rotate(235deg) saturate(180%) brightness(1.06);
-    -webkit-filter:hue-rotate(235deg) saturate(180%) brightness(1.06);transform:translateY(2px);
-  }
+  .emoji-blue{ display:inline-block;filter:hue-rotate(235deg) saturate(180%) brightness(1.06);
+    -webkit-filter:hue-rotate(235deg) saturate(180%) brightness(1.06);transform:translateY(2px); }
   #summary.done{ font-size:clamp(28px,8vw,88px); }
 
   .panel .card:nth-child(-n+4){ background:rgba(0,0,0,.02); backdrop-filter:blur(1.2px) }
@@ -96,116 +97,66 @@
   }
   @media (min-width:768px){ #nowline{ font-size:14px } }
 
-  .fit1{
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: clip;
-    display:block; width:100%;
-  }
+  .fit1{ white-space:nowrap; overflow:hidden; text-overflow:clip; display:block; width:100%; }
 
-  /* —— 立冬→冬至 进度条（升级版） —— */
+  /* —— 立冬→冬至 进度条 —— */
   .season-wrap{
-    position: relative;
-    z-index: 5;
-    margin-top: var(--season-offset); /* 统一用变量控制整体上移 */
+    position:relative; z-index:5; margin-top:var(--season-offset);
+    display:flex; flex-direction:column; gap:10px;
   }
-  /* 图层：条在下，文字居中，两个 GIF 在最上面 */
-  .season-bar{ position:relative; height:18px; border-radius:999px; overflow:visible; background:#ffffff1a; box-shadow:var(--shadow); z-index:1; }
-  .season-fill{ position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2); clip-path: inset(0 0 0 0 round 999px); z-index:0; }
-  .season-percent{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; user-select:none; z-index:1; }
+  /* 未完成时顺序：条 → 标签文案 → final */
+  .season-bar   { order:1; }
+  .season-ends  { order:2; }
+  .season-final { order:3; }
 
-  /* —— 把两只 GIF 放到条“上面”，用变量统一控制高度 —— */
-:root{
-  /* 负值=越往上；根据你图片实际高度微调 */
-  --pet-top: -60px;   /* 试试看 -34 ~ -44 之间，觉得还低就再减小一点 */
-  --end-right: -2px;  /* 终点水平贴条右端：0=齐平，负值稍微溢出一点点 */
-}
+  /* 完成态：final 在上，进度条居中，文案在下；并隐藏两只 GIF */
+  .season-wrap.done .season-final { order:1; display:block; }
+  .season-wrap.done .season-bar   { order:2; }
+  .season-wrap.done .season-ends  { order:3; }
+  .season-wrap.done .season-dog,
+  .season-wrap.done .season-end   { display:none !important; }
 
-/* 条本身允许元素溢出，并压在最底层 */
-.season-bar{ position:relative; overflow:visible; z-index:1; }
+  .season-bar{
+    position:relative; height:18px; border-radius:999px;
+    overflow:visible; background:#ffffff1a; box-shadow:var(--shadow); z-index:1;
+  }
+  .season-fill{
+    position:absolute; inset:0 auto 0 0; width:0;
+    background: linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2);
+    clip-path: inset(0 0 0 0 round 999px); z-index:0;
+  }
+  .season-percent{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45);
+    pointer-events:none; user-select:none; z-index:1;
+  }
 
-/* 小狗（左侧，骑在条上方） */
-.season-dog{
-  position:absolute;
-  top: var(--pet-top);
-  left: 0;
-  transform: translateX(-50%);
-  width:44px; height:auto;
-  z-index:2; pointer-events:none;
-  animation:season-bounce .9s ease-in-out infinite;
-}
+  /* 两只 GIF：各自独立高度，放在条“上方” */
+  .season-dog{
+    position:absolute; top:var(--dog-top); left:0; transform:translateX(-50%);
+    width:44px; height:auto; z-index:2; pointer-events:none;
+    filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));
+    animation:season-bounce .9s ease-in-out infinite;
+  }
+  .season-end{
+    position:absolute; top:var(--end-top); right:var(--end-right);
+    width:62px; height:auto; z-index:2; pointer-events:none;  /* 1.4× 放大 */
+    filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));
+  }
+  @keyframes season-bounce{ 0%,100%{ transform:translate(-50%,0) } 50%{ transform:translate(-50%,-6px) } }
 
-/* 右侧终点（放大 1.4×，也骑在条上方） */
-.season-end{
-  position:absolute;
-  top: var(--pet-top);
-  right: var(--end-right);  /* 贴着条右端 */
-  width:62px; height:auto;  /* 44 × 1.4 */
-  z-index:2; pointer-events:none;
-}
-
+  /* 左右标签文案：左右顶格对齐 */
+  .season-ends{
+    width:100%; display:flex; justify-content:space-between; align-items:center;
+    margin:8px 2px 0; color:var(--muted); font-size:.95em;
+  }
 
   /* 完成时的最终 GIF（居中并上移一点） */
   .season-final{
-    display:none; margin:30px auto 0; width:160px; height:auto;
+    display:none; margin:30px auto 0; width:180px; height:auto;   /* 可调大小 */
     position:relative; top: var(--final-up);
     filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
   }
-  /* 进度区域用纵向 Flex，默认顺序：条 → 文案 → final */
-.season-wrap{
-  position: relative;
-  z-index: 5;
-  margin-top: clamp(12px,24vh, 32px);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;                     /* 条与文案/final 的间距 */
-}
-
-/* 基本顺序（未完成） */
-.season-bar   { order: 1; }
-.season-ends  { order: 2; }
-.season-final { order: 3; }
-
-/* 完成后：final 在最上，进度条居中，文案在最下 */
-.season-wrap.done .season-final { order: 1; display:block; }
-.season-wrap.done .season-bar   { order: 2; }
-.season-wrap.done .season-ends  { order: 3; }
-
-/* 完成后隐藏两只 GIF，但保留条本身与百分比 */
-.season-wrap.done .season-dog,
-.season-wrap.done .season-end { display: none !important; }
-
-/* final.gif 的位置与大小（想更靠上就调这个负值/正值） */
-:root{ --final-offset: -10px; }   /* 往上：负值更大；往下：设为正值 */
-.season-final{
-  display:none;
-  margin: var(--final-offset) auto 0;   /* 顶部外边距可为负，拉近进度条 */
-  width: 160px; height: auto;
-  filter: drop-shadow(0 12px 28px rgba(0,0,0,.45));
-}
-
-/* —— 保证两只 GIF 都“骑”在进度条上 —— */
-:root{
-  --pet-top: -38px;   /* 往上：更负；往下：更接近 0 */
-  --end-right: -2px;  /* 终点水平贴条右端：0=齐平，负值稍微溢出一点 */
-}
-.season-bar{ position:relative; height:18px; border-radius:999px; overflow:visible; background:#ffffff1a; box-shadow:var(--shadow); }
-.season-fill{ position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,#9cd9ff,#c7ceff,#ff9aa2); clip-path: inset(0 0 0 0 round 999px); }
-.season-percent{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; user-select:none; }
-
-.season-dog{
-  position:absolute; top:var(--pet-top); left:0; transform:translateX(-50%);
-  width:44px; height:auto; z-index:2; pointer-events:none;
-  filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));
-  animation:season-bounce .9s ease-in-out infinite;
-}
-.season-end{
-  position:absolute; top:var(--pet-top); right:var(--end-right);
-  width:62px; height:auto; z-index:2; pointer-events:none;  /* 1.4 × 放大 */
-  filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));
-}
-@keyframes season-bounce{ 0%,100%{ transform:translate(-50%,0) } 50%{ transform:translate(-50%,-6px) } }
-
 </style>
 </head>
 <body>
@@ -233,7 +184,7 @@
         <img class="season-end" id="seasonEnd" src="assets/zongicon.gif" alt="终点等待">
       </div>
       <div class="season-ends" id="seasonEnds">
-        <span>立冬, 苏黎世</span>
+        <span>立冬，苏黎世</span>
         <span>冬至，成都</span>
       </div>
       <img class="season-final" id="seasonFinal" src="assets/final.gif" alt="完成">
@@ -306,6 +257,7 @@ function split(ms){
 const LIDONG_START = new Date('2025-11-07T17:05:00+08:00').getTime();
 const DONGZHI_END  = new Date('2025-12-21T23:03:00+08:00').getTime();
 
+const _sWrap = document.getElementById('seasonWrap');
 const _sBar  = document.getElementById('seasonBar');
 const _sFill = document.getElementById('seasonFill');
 const _sDog  = document.getElementById('seasonDog');
@@ -331,16 +283,16 @@ function updateSeason(){
   const barW = _sBar.clientWidth || 1;
   const dogW = _sDog.offsetWidth || 44;
   const endW = _sEnd.offsetWidth || 62;
-  const END_RIGHT_OFFSET = 6;     // .season-end 的 right:-6px
+  const END_RIGHT_OFFSET = 6;     // .season-end 的 right:-6px（向内）
   const SAFE_GAP = 8;             // 安全间距
 
-  const endLeft = barW - endW - END_RIGHT_OFFSET;                // 终点左边界
+  const endLeft = barW - endW - END_RIGHT_OFFSET;         // 终点左边界
   const maxDogCenter = Math.max(dogW/2, endLeft - SAFE_GAP - dogW/2);
   let dogCenter = rawP * barW;
   dogCenter = Math.min(Math.max(dogW/2, dogCenter), maxDogCenter);
 
-  _sFill.style.width = pct + '%';                               // 填充照真实进度走到 100%
-  _sDog.style.left = (dogCenter / barW * 100) + '%';            // 小狗位置（中心点）
+  _sFill.style.width = pct + '%';                          // 填充照真实进度走到 100%
+  _sDog.style.left   = (dogCenter / barW * 100) + '%';     // 小狗位置（中心点）
 }
 window.addEventListener('resize', updateSeason);
 
@@ -353,37 +305,32 @@ function render(){
   const targetEl  = document.getElementById('targetline');
 
   if (left.done) {
-  summaryEl.innerHTML = '就是现在！到他身边啦 <span class="emoji-blue" role="img" aria-label="revolving hearts">💞</span>';
-  summaryEl.classList.add('done');
+    summaryEl.innerHTML = '就是现在！到他身边啦 <span class="emoji-blue" role="img" aria-label="revolving hearts">💞</span>';
+    summaryEl.classList.add('done');
 
-  if (targetEl) { targetEl.textContent = ''; targetEl.style.display = 'none'; }
+    if (targetEl) { targetEl.textContent = ''; targetEl.style.display = 'none'; }
 
-  // ✅ 完成态：给季节进度容器加上 .done
-  if (_sWrap) _sWrap.classList.add('done');
+    // 完成态：条保留，final 出现，两只 GIF 隐藏
+    if (_sWrap) _sWrap.classList.add('done');
 
-  // 进度条继续显示 & 100%
-  updateSeason();
-  if (_sBar)  _sBar.style.display = 'block';
-  if (_sEnds) _sEnds.style.display = 'flex';
+    updateSeason();
+    if (_sBar)  _sBar.style.display = 'block';
+    if (_sEnds) _sEnds.style.display = 'flex';
+    if (_sFinal) _sFinal.style.display = 'block';
 
-  // 显示 final.gif（CSS 会把它放到上方）
-  if (_sFinal) _sFinal.style.display = 'block';
+  } else {
+    summaryEl.textContent = `倒计时： ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
+    summaryEl.classList.remove('done');
 
-} else {
-  summaryEl.textContent = `倒计时： ${left.d} 天 ${left.h} 小时 ${left.m} 分钟 ${left.s} 秒`;
-  summaryEl.classList.remove('done');
+    if (targetEl) { targetEl.style.display = 'block'; targetEl.textContent = '我们在成都见面吧！'; }
 
-  if (targetEl) { targetEl.style.display = 'block'; targetEl.textContent = '我们在成都见面吧！'; }
+    if (_sWrap) _sWrap.classList.remove('done');
 
-  // ✅ 恢复常态：去掉 .done
-  if (_sWrap) _sWrap.classList.remove('done');
-
-  updateSeason();
-  if (_sBar)  _sBar.style.display = 'block';
-  if (_sEnds) _sEnds.style.display = 'flex';
-  if (_sFinal) _sFinal.style.display = 'none';
-}
-
+    updateSeason();
+    if (_sBar)  _sBar.style.display = 'block';
+    if (_sEnds) _sEnds.style.display = 'flex';
+    if (_sFinal) _sFinal.style.display = 'none';
+  }
 
   // 倒计时卡片
   const p = document.getElementById('panel'); 
@@ -395,7 +342,6 @@ function render(){
   document.getElementById('nowline').textContent =
     `他的时间：${z.Y}.${pad(z.M)}.${pad(z.D)} ${pad(z.h)}:${pad(z.min)}:${pad(z.s)}`;
 
-  // 单行自适应
   applyFits();
 }
 render();
@@ -480,8 +426,3 @@ window.addEventListener('DOMContentLoaded', applyFits);
 </script>
 </body>
 </html>
-
-
-
-
-

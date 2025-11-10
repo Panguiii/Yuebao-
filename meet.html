@@ -45,7 +45,7 @@
   .sub{color:var(--muted);margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
 
   /* 让“倒计时区块 + 见面文案”整体更靠下 */
-  .panel{margin-top:clamp(24px,6vh,160px)}
+  .panel{margin-top:clamp(24px,4vh,120px)}
 
   .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
   .card{position:relative;background:var(--glass);backdrop-filter:blur(2px);border-radius:var(--radius);padding:18px;text-align:center;box-shadow:var(--shadow)}
@@ -73,7 +73,7 @@
 
   /* 放大“我们在成都见面吧 …” */
   #targetline{
-    font-size:clamp(20px,5vw,44px); font-weight:900; letter-spacing:.3px; line-height:1.2;
+    font-size:clamp(20px,5vw,42px); font-weight:900; letter-spacing:.3px; line-height:1.2;
     text-shadow:0 2px 10px rgba(70,140,255,.35); margin-top:clamp(32px,8vh,96px);
   }
 
@@ -256,4 +256,5 @@ render(); setInterval(render,1000);
 </script>
 </body>
 </html>
+
 

@@ -1,4 +1,4 @@
-margin-top<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
 <link rel="apple-touch-icon" href="icons/iconmeet180.png">
@@ -12,12 +12,13 @@ margin-top<!doctype html>
     --text:#fff; --muted:rgba(255,255,255,.88);
     --glass:rgba(0,0,0,.12); --panel:rgba(0,0,0,.28);
     --shadow:0 12px 28px rgba(0,0,0,.45); --radius:16px;
-    --dim:.10; --fz-base:clamp(14px,1.6vw,18px); --fz-h1:clamp(22px,2.4vw,34px); --fz-num:clamp(36px,6vw,72px);
+    --dim:.10; --fz-base:clamp(14px,1.6vw,18px); --fz-h1:clamp(28px,8vw,70px); --fz-num:clamp(36px,6vw,72px);
   }
   html,body{
     margin:0;padding:0;background:#0b0f16;color:var(--text);
     font:var(--fz-base)/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif
   }
+
   /* 背景 */
   #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%;z-index:0}
   .veil{position:fixed;inset:0;background:rgba(0,0,0,var(--dim));z-index:1;pointer-events:none}
@@ -31,9 +32,7 @@ margin-top<!doctype html>
   /* 布局：用 flex 控制顺序与上下分布 */
   .wrap{
     position:relative;z-index:3;max-width:1120px;margin:0 auto;
-    padding:28px 22px 18px;
-    min-height:100svh;            /* 让内容占满屏 */
-    display:flex;flex-direction:column;
+    padding:28px 22px 18px; min-height:100svh; display:flex;flex-direction:column;
   }
   h1{margin:0 0 10px;font-size:var(--fz-h1);letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.35)}
 
@@ -45,8 +44,8 @@ margin-top<!doctype html>
 
   .sub{color:var(--muted);margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
 
-  /* 让“倒计时区块 + 见面文案”整体更靠下，接近视觉居中 */
-  .panel{margin-top:clamp(10px,8vh,120px)}
+  /* 让“倒计时区块 + 见面文案”整体更靠下 */
+  .panel{margin-top:clamp(24px,12vh,160px)}
 
   .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
   .card{position:relative;background:var(--glass);backdrop-filter:blur(2px);border-radius:var(--radius);padding:18px;text-align:center;box-shadow:var(--shadow)}
@@ -56,155 +55,60 @@ margin-top<!doctype html>
   .num{font-variant-numeric:tabular-nums;letter-spacing:.5px;font-size:var(--fz-num);font-weight:900;margin-bottom:6px;text-shadow:0 1px 6px rgba(0,0,0,.25)}
   .label{opacity:.95}
 
-  /* 你之前的“回答”样式（蓝色光晕） */
+  /* 回答样式（蓝色光晕） */
   .summary{
-    margin-top:8px;
-    font-variant-numeric:tabular-nums;
+    margin-top:8px;font-variant-numeric:tabular-nums;
     text-shadow:0 2px 8px rgba(0,0,220,.28);
-    font-size: clamp(22px, 5.8vw, 64px);  /* 回答更像副标题 */
-    font-weight:900; line-height:1.18; letter-spacing:.3px;
+    font-size:clamp(22px,5.8vw,64px);font-weight:900;line-height:1.18;letter-spacing:.3px;
   }
-
-  /* 💞 染成蓝色 */
   .emoji-blue{
-    display:inline-block;
-    filter:hue-rotate(235deg) saturate(180%) brightness(1.06);
-    -webkit-filter:hue-rotate(235deg) saturate(180%) brightness(1.06);
-    transform:translateY(2px);
+    display:inline-block;filter:hue-rotate(235deg) saturate(180%) brightness(1.06);
+    -webkit-filter:hue-rotate(235deg) saturate(180%) brightness(1.06);transform:translateY(2px);
   }
+  #summary.done{ font-size:clamp(28px,8vw,88px); }
 
-  /* 计时结束时（无动画，仅字号上限更大，保留你的需求） */
-  #summary.done{
-    font-size:clamp(28px,8vw,88px);
-  }
-
-  /* 只让“分/秒”两张卡更透明 */
-  :root{
-    --glass-minute: rgba(0,0,0,.02);
-    --glass-second: rgba(0,0,0,.02);
-  }
-  .panel .card:nth-child(3){background:var(--glass-minute);backdrop-filter:blur(1.5px)}
-  .panel .card:nth-child(4){background:var(--glass-second);backdrop-filter:blur(1.2px)}
-  .panel .card:nth-child(3)::before{opacity:.55}
-  .panel .card:nth-child(4)::before{opacity:.45}
+  /* 四张卡更透明 */
+  .panel .card:nth-child(-n+4){ background:rgba(0,0,0,.02); backdrop-filter:blur(1.2px) }
+  .panel .card:nth-child(-n+4)::before{ opacity:.45 }
 
   /* 放大“我们在成都见面吧 …” */
   #targetline{
-    font-size:clamp(20px,5vw,44px);
-    font-weight:900;
-    letter-spacing:.3px;
-    line-height:1.2;
-    text-shadow:0 2px 10px rgba(70,140,255,.35);
-    margin-top:12px;
+    font-size:clamp(20px,5vw,44px); font-weight:900; letter-spacing:.3px; line-height:1.2;
+    text-shadow:0 2px 10px rgba(70,140,255,.35); margin-top:clamp(32px,8vh,96px);
   }
-  /* 1) 标题更大（覆盖原来的 --fz-h1） */
-:root{
-  /* 手机到桌面自适应，最大到 64px，可再按喜好调 */
-  --fz-h1: clamp(28px, 8vw, 70px);
-}
 
-/* 2) 让“天 / 小时 / 分钟 / 秒”四张卡都更透明（和分秒一致） */
-.panel .card:nth-child(-n+4){
-  background: rgba(0,0,0,.02);
-  backdrop-filter: blur(1.2px);
-}
-.panel .card:nth-child(-n+4)::before{
-  opacity: .45;   /* 彩虹描边也淡一些 */
-}
+  /* 双行标题 */
+  .title-2lines{ line-height:1.1; margin:0 0 12px; text-shadow:0 2px 10px rgba(0,0,0,.35); }
+  .h1-line1{ display:block; font-size:clamp(18px,3.8vw,28px); font-weight:700; letter-spacing:.2px; opacity:.92; }
+  .h1-line2{ display:block; font-size:var(--fz-h1); font-weight:900; letter-spacing:.3px; margin-top:4px; }
 
-/* 3) “我们在成都见面吧 …”与倒计时区块拉开距离 */
-#targetline{
-  margin-top: clamp(32px, 8vh, 96px);  /* 数值越大离得越远 */
-}
-/* 双行标题样式 */
-.title-2lines{
-  line-height: 1.1;
-  margin: 0 0 12px;               /* 第二行与下面“回答(#summary)”的距离 */
-  text-shadow: 0 2px 10px rgba(0,0,0,.35);
-}
+  /* 标题+回答整体下移 */
+  :root{ --hero-offset: clamp(32px, 12vh, 200px); }
+  .title-2lines{ margin-top: var(--hero-offset) !important; }
 
-/* 第一行：‘那么’（略小、次级强调）*/
-.h1-line1{
-  display:block;
-  font-size: clamp(18px, 3.8vw, 28px);
-  font-weight: 700;
-  letter-spacing: .2px;
-  opacity: .92;
-}
-
-/* 第二行：主标题（用你全局的 --fz-h1，可单独再放大） */
-.h1-line2{
-  display:block;
-  font-size: var(--fz-h1);       /* 如果想更大，可把 --fz-h1 调到 clamp(28px, 6.8vw, 72px) */
-  font-weight: 900;
-  letter-spacing: .3px;
-  margin-top: 4px;               /* 两行之间的间距 */
-}
-/* 让 “标题 + 回答(#summary)” 这块整体更靠下 */
-:root{
-  /* 主页到内容的下移量：手机用视口高度的 12%，桌面最多 180px */
-  --hero-offset: clamp(24px, 4vh, 160px);
-}
-
-/* 如果你已经按我之前的建议把标题换成两行并加了这个类名，用它： */
-.title-2lines{
-  margin-top: var(--hero-offset) !important;
-}
-
-/* 如果你的标题还是普通 <h1>，就用这一条（择一保留即可）： */
-/* h1{ margin-top: var(--hero-offset) !important; } */
-  /* 把当前时间固定到右下角 */
-#nowline{
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 4;                 /* 在内容之上 */
-  order: initial !important;  /* 覆盖之前的 flex 顺序 */
-  margin: 0 !important;
-  padding: 6px 10px;
-  background: rgba(0,0,0,.28); /* 轻微玻璃感，可调更透 */
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.3;
-}
-@media (min-width:768px){
-  #nowline{ font-size: 14px; }
-}
-  /* BGM 开关（右下角，带淡化/发光） */
-.bgm-btn{
-  position: fixed; right: 12px; bottom: 68px; z-index: 6; /* 避开右下角时间卡片 */
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,.28); backdrop-filter: blur(6px);
-  box-shadow: 0 8px 20px rgba(0,0,0,.35);
-  color:#fff; font-size:18px; user-select:none; cursor:pointer;
-  opacity:.72; transition: opacity .25s ease, transform .18s ease, box-shadow .25s ease;
-}
-.bgm-btn:hover{ opacity:1; transform: translateY(-1px); }
-.bgm-btn.on{
-  opacity:1;
-  box-shadow: 0 10px 26px rgba(0,0,0,.45), 0 0 18px rgba(90,160,255,.35);
-}
-@media (min-width:768px){ .bgm-btn{ bottom: 82px; } }
-
+  /* 当前时间固定右下 */
+  #nowline{
+    position:fixed; right:12px; bottom:12px; z-index:4; order:initial !important;
+    margin:0 !important; padding:6px 10px; background:rgba(0,0,0,.28);
+    backdrop-filter:blur(6px); border-radius:12px; box-shadow:var(--shadow);
+    color:var(--muted); font-size:13px; line-height:1.3;
+  }
+  @media (min-width:768px){ #nowline{ font-size:14px } }
 </style>
 </head>
 <body>
-  <!-- 只用默认背景 -->
+  <!-- 默认背景 -->
   <img id="bg" src="assets/default-bg.jpg" alt="">
   <div class="veil"></div>
   <div class="glow"></div>
 
   <div class="wrap">
     <h1 class="title-2lines">
-  <span class="h1-line1">那么</span>
-  <span class="h1-line2">还要多久我才能在你身边</span>
-</h1>
+      <span class="h1-line1">那么</span>
+      <span class="h1-line2">还要多久我才能在你身边</span>
+    </h1>
 
-    <!-- 回答（移动到标题下方） -->
+    <!-- 回答（在标题下方） -->
     <div id="summary" class="summary"></div>
 
     <!-- 倒计时卡片 -->
@@ -213,16 +117,14 @@ margin-top<!doctype html>
     <!-- 见面文案 -->
     <div id="targetline" class="sub"></div>
 
-    <!-- 当前时间（放最底部） -->
+    <!-- 当前时间（右下角固定） -->
     <div id="nowline" class="sub"></div>
   </div>
-<!-- 背景音乐开关按钮（放在 <script> 之前） -->
-<div class="bgm-btn" id="bgmBtn" aria-label="音乐开关" title="音乐开关">♪</div>
 
-<!-- 注意大小写与文件一致：longdistance.mp3 -->
-<audio id="bgm" preload="auto" loop>
-  <source src="assets/longdistance.mp3" type="audio/mpeg">
-</audio>
+  <!-- 背景音乐（无按钮，尽量自动 + 触摸即播） -->
+  <audio id="bgm" preload="auto" loop playsinline muted>
+    <source src="assets/longdistance.mp3" type="audio/mpeg">
+  </audio>
 
 <script>
 /* ===== 倒计时（最大单位：天） ===== */
@@ -244,7 +146,6 @@ function split(ms){
   const m=Math.floor(t/60);    t%=60;
   return{d,h,m,s:t,done:false};
 }
-
 function render(){
   const left=split(TARGET-Date.now());
   const z=nowInZoneParts(TZ);
@@ -271,28 +172,20 @@ function render(){
   document.getElementById('nowline').textContent=
     `他的时间：${z.Y}.${pad(z.M)}.${pad(z.D)} ${pad(z.h)}:${pad(z.min)}:${pad(z.s)}`;
 }
-
 render(); setInterval(render,1000);
-  // === 背景音乐：随机起点 + 淡入淡出 ===
+
+/* ===== BGM：尽量自动 + 一触即播（含微信）===== */
 (function(){
   const bgm = document.getElementById('bgm');
-  const btn = document.getElementById('bgmBtn');
-  if(!bgm || !btn) return;
+  if(!bgm) return;
 
-  const LS_KEY = 'bgm_on';
-  const FADE_IN_MS  = 1600;   // 淡入时长
-  const FADE_OUT_MS = 800;    // 淡出时长
-  const TARGET_VOL  = 0.45;   // 目标音量（0~1）
-  const START_MARGIN = 5;      // 随机起点时，距离尾部至少 5s，避免马上循环
+  const FADE_IN_MS  = 1600;
+  const FADE_OUT_MS = 800;
+  const TARGET_VOL  = 0.65;
+  const START_MARGIN = 5; // 随机起点距尾部至少 5s
+  let started = false;
 
-  // 工具：等待元数据、淡入淡出
-  function waitMeta(){
-    return new Promise(res=>{
-      if (isFinite(bgm.duration) && bgm.duration>0) return res();
-      bgm.addEventListener('loadedmetadata', res, {once:true});
-    });
-  }
-  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
   async function fadeTo(target, ms){
     const start = bgm.volume;
     const steps = Math.max(1, Math.round(ms/16));
@@ -302,91 +195,64 @@ render(); setInterval(render,1000);
     }
     bgm.volume = target;
   }
+  function waitMetaWithTimeout(ms=800){
+    return new Promise(resolve=>{
+      let done=false;
+      const on=()=>{ if(!done){done=true; bgm.removeEventListener('loadedmetadata',on); resolve();}};
+      bgm.addEventListener('loadedmetadata', on, {once:true});
+      setTimeout(on, ms); // 兜底
+    });
+  }
 
-  // 每次进入页面时，选择一个随机起点
+  // 预热：静音自动播放（被允许的平台会缓冲更好）
+  (async()=>{ try{ await bgm.play(); }catch(e){} })();
+
   async function startFromRandom(){
-    await waitMeta();
+    if (started) return;
+    await waitMetaWithTimeout(800);
     const dur = isFinite(bgm.duration) ? bgm.duration : 0;
     const max = Math.max(0, dur - START_MARGIN);
     const t   = (max>0) ? Math.random()*max : 0;
     try{ bgm.currentTime = t; }catch(e){}
+    try{ bgm.muted = false; }catch(e){}
     bgm.volume = 0;
-    await bgm.play().catch(()=>{});     // iOS 需手势触发
+    await bgm.play().catch(()=>{});  // 需要手势的平台，这里会在解锁时放行
     await fadeTo(TARGET_VOL, FADE_IN_MS);
-    btn.classList.add('on');
-    btn.textContent = '♫';
-    localStorage.setItem(LS_KEY,'1');
+    started = true;
   }
 
   async function pauseWithFade(){
     await fadeTo(0, FADE_OUT_MS);
     bgm.pause();
-    btn.classList.remove('on');
-    btn.textContent = '♪';
-    localStorage.setItem(LS_KEY,'0');
+    started = false;
   }
 
-  // 点击按钮手动开/关
-  btn.addEventListener('click', async ()=>{
-    if (bgm.paused){
-      await startFromRandom();   // 打开：随机起点 + 淡入
-    }else{
-      await pauseWithFade();     // 关闭：淡出
-    }
-  });
+  // 解锁触发（一次即可）：微信桥 + 通用手势
+  const offs=[];
+  const on=(el,ev,fn,opt)=>{ el.addEventListener(ev,fn,opt); offs.push(()=>el.removeEventListener(ev,fn,opt)); };
+  const offAll=()=>offs.splice(0).forEach(fn=>fn());
+  const unlock=async()=>{ offAll(); await startFromRandom(); };
 
-  // 记忆上次状态：若为“开”，等待一次手势后自动播放（随机起点）
-  if (localStorage.getItem(LS_KEY)==='1'){
-    const unlock = async ()=>{ await startFromRandom(); document.removeEventListener('pointerdown', unlock); };
-    document.addEventListener('pointerdown', unlock, {once:true});
-  }else{
-    // 初始显示为关闭态
-    btn.classList.remove('on');
-    btn.textContent = '♪';
-  }
+  on(document,'WeixinJSBridgeReady', unlock, {once:true});
+  if (window.wx && typeof wx.ready==='function'){ try{ wx.ready(unlock); }catch(e){} }
+  on(document,'pointerdown', unlock, {once:true});
+  on(document,'touchstart', unlock, {once:true});
+  on(document,'click', unlock, {once:true});
+  on(document,'keydown', unlock, {once:true});
 
-  // 页面切后台/回来：淡出暂停；回到前台如果记忆为开，再淡入继续（不再随机）
+  // 页面切后台/回来：淡出暂停；回来淡入继续（不重新随机）
   document.addEventListener('visibilitychange', async ()=>{
     if (document.hidden){
       if (!bgm.paused) await pauseWithFade();
     }else{
-      if (localStorage.getItem(LS_KEY)==='1'){
-        // 回前台：从当前进度继续淡入（不重新随机）
-        bgm.volume = 0;
-        await bgm.play().catch(()=>{});
-        await fadeTo(TARGET_VOL, FADE_IN_MS);
-        btn.classList.add('on'); btn.textContent='♫';
-      }
+      try{ bgm.muted = false; }catch(e){}
+      bgm.volume = 0;
+      await bgm.play().catch(()=>{});
+      await fadeTo(TARGET_VOL, FADE_IN_MS);
+      started = true;
     }
   });
 })();
-
 </script>
-  
-  </body>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
